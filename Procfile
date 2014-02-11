@@ -1,1 +1,1 @@
-web: bin/gostbook
+web: gostbook

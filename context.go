@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.google.com/p/gorilla/sessions"
+	"github.com/gorilla/sessions"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"

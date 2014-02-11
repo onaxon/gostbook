@@ -1,10 +1,10 @@
 package main
 
 import (
-	"code.google.com/p/gorilla/pat"
-	"code.google.com/p/gorilla/sessions"
 	"encoding/gob"
 	"fmt"
+	"github.com/gorilla/pat"
+	"github.com/gorilla/sessions"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
@@ -36,7 +36,7 @@ var router *pat.Router
 
 func main() {
 	var err error
-	session, err = mgo.Dial(os.Getenv("DATABASE_URL"))
+	session, err = mgo.Dial(os.Getenv("MONGOLAB_URI"))
 	if err != nil {
 		panic(err)
 	}
@@ -65,6 +65,7 @@ func main() {
 
 	router.Add("POST", "/sign", handler(sign)).Name("sign")
 
+	fmt.Println("About lo listen on", os.Getenv("PORT"))
 	if err = http.ListenAndServe(":"+os.Getenv("PORT"), router); err != nil {
 		panic(err)
 	}

@@ -1,6 +1,7 @@
 *
 !.heroku
 !Procfile
+!README.md
 !.gitignore
 !*.go
 !*.html
