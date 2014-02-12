@@ -56,12 +56,17 @@ func sign(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
 }
 
 func loginForm(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
-	return T("login.html").Execute(w, map[string]interface{}{
+	t := T("login.html").Execute(w, map[string]interface{}{
 		"ctx": ctx,
 	})
+	if err = ctx.Session.Save(req, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	return t
 }
 
-func login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func login(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
 	username, password := req.FormValue("username"), req.FormValue("password")
 
 	user, e := Login(ctx, username, password)
@@ -72,23 +77,36 @@ func login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 	//store the user id in the values and redirect to index
 	ctx.Session.Values["user"] = user.ID
+	if err = ctx.Session.Save(req, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, req, reverse("index"), http.StatusSeeOther)
 	return nil
 }
 
-func logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func logout(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
 	delete(ctx.Session.Values, "user")
+	if err = ctx.Session.Save(req, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, req, reverse("index"), http.StatusSeeOther)
 	return nil
 }
 
 func registerForm(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
-	return T("register.html").Execute(w, map[string]interface{}{
+	t := T("register.html").Execute(w, map[string]interface{}{
 		"ctx": ctx,
 	})
+	if err = ctx.Session.Save(req, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	return t
 }
 
-func register(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func register(w http.ResponseWriter, req *http.Request, ctx *Context) (err error) {
 	username, password := req.FormValue("username"), req.FormValue("password")
 
 	u := &User{
@@ -97,13 +115,17 @@ func register(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	}
 	u.SetPassword(password)
 
-	if err := ctx.C("users").Insert(u); err != nil {
+	if err = ctx.C("users").Insert(u); err != nil {
 		ctx.Session.AddFlash("Problem registering user.")
 		return registerForm(w, req, ctx)
 	}
 
 	//store the user id in the values and redirect to index
 	ctx.Session.Values["user"] = u.ID
+	if err = ctx.Session.Save(req, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, req, reverse("index"), http.StatusSeeOther)
 	return nil
 }
